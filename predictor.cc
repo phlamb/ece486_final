@@ -43,16 +43,30 @@ bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, 
 // argument (taken) indicating whether or not the branch was taken.
 void PREDICTOR::update_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
-    //Update branch history
-    int index = br->instruction_addr & 1024;
-    alpha.localPrediction[alpha.localHistory[index]] <<= 1;
-    if(taken) //if not taken, << puts a 0 in lsb
-    {
-        alpha.localPrediction[alpha.localHistory[index]] |= 1;
-    }
+    //Update branch history pattern
+    int index = br->instruction_addr & (1023);
+    //shift history
+    alpha.localHistory[index] <<= 1;
+    //mask off bits higher than 10 used bits
+    alpha.localHistory[index] &= (1023);
+
+    //If taken, put 1 (taken) in lsb, if not taken 0 already in lsb from <<
+    if(taken)
+        alpha.localHistory[index] |= 1;
 
     //Update prediction counter
-
+    if(taken)
+    {
+        //If taken, increment counter, saturate at 7
+        if(alpha.localPrediction[alpha.localHistory[index]] < 7)
+            alpha.localPrediction[alpha.localHistory[index]] += 1;
+    }
+    else //not taken
+    {
+        //not taken, decrement counter, saturate at 0
+        //if(alpha.localPrediction[alpha.localHistory[index]] > 0)
+         //   alpha.localPrediction[alpha.localHistory[index]] -= 1;
+    }
 }
 
 
@@ -69,14 +83,14 @@ static bool get_branch_prediction(const branch_record_c* br, const op_state_c* o
 
     if(choosePredictor() == PREDICTOR_LOCAL)
     {
-        int index = br->instruction_addr & 1024;
-        return (bool)alpha.localPrediction[alpha.localHistory[index]] & 0x1;
+        int index = br->instruction_addr & (1023);
+        //mask and use MSB to determine whether to branch (0-3: not taken, 4-7: taken)
+        return (bool)alpha.localPrediction[alpha.localHistory[index]] & 0x4;
     }
     else //PREDICTOR_GLOBAL
     {
         return false; 
     }
-
 
     return prediction;   // true for taken, false for not taken
     
