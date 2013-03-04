@@ -3,6 +3,9 @@
 *.lo
 *.o
 
+# Program binary
+predictor
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
@@ -11,3 +14,7 @@
 *.lai
 *.la
 *.a
+
+#vim temp files
+*.swp
+*.un~
