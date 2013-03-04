@@ -43,30 +43,8 @@ bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, 
 // argument (taken) indicating whether or not the branch was taken.
 void PREDICTOR::update_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
-    //Update branch history pattern
-    int index = br->instruction_addr & (1023);
-    //shift history
-    alpha.localHistory[index] <<= 1;
-    //mask off bits higher than 10 used bits
-    alpha.localHistory[index] &= (1023);
-
-    //If taken, put 1 (taken) in lsb, if not taken 0 already in lsb from <<
-    if(taken)
-        alpha.localHistory[index] |= 1;
-
-    //Update prediction counter
-    if(taken)
-    {
-        //If taken, increment counter, saturate at 7
-        if(alpha.localPrediction[alpha.localHistory[index]] < 7)
-            alpha.localPrediction[alpha.localHistory[index]] += 1;
-    }
-    else //not taken
-    {
-        //not taken, decrement counter, saturate at 0
-        //if(alpha.localPrediction[alpha.localHistory[index]] > 0)
-         //   alpha.localPrediction[alpha.localHistory[index]] -= 1;
-    }
+    //update branch predictor
+    update_branch_predictor(br, os, taken);
 }
 
 
@@ -99,6 +77,30 @@ static bool get_branch_prediction(const branch_record_c* br, const op_state_c* o
 static void update_branch_predictor(const branch_record_c* br, const op_state_c* os, bool taken)
 {
 
+    //Update branch history pattern
+    int index = br->instruction_addr & (1023);
+    //shift history
+    alpha.localHistory[index] <<= 1;
+    //mask off bits higher than 10 used bits
+    alpha.localHistory[index] &= (1023);
+
+    //If taken, put 1 (taken) in lsb, if not taken 0 already in lsb from <<
+    if(taken)
+        alpha.localHistory[index] |= 1;
+
+    //Update prediction counter
+    if(taken)
+    {
+        //If taken, increment counter, saturate at 7
+        if(alpha.localPrediction[alpha.localHistory[index]] < 7)
+            alpha.localPrediction[alpha.localHistory[index]] += 1;
+    }
+    else //not taken
+    {
+        //not taken, decrement counter, saturate at 0
+        //if(alpha.localPrediction[alpha.localHistory[index]] > 0)
+         //   alpha.localPrediction[alpha.localHistory[index]] -= 1;
+    }
 }
 //======================================
 // Target Predictor Implementation
