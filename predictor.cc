@@ -10,6 +10,7 @@ static void update_branch_predictor(const branch_record_c* br, const op_state_c*
 static void get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address);
 static void update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
 
+
 struct AlphaPredictorStorage
 {
     uint16_t    localHistory[1024];     //Size: 10b x 1024
@@ -42,12 +43,16 @@ bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, 
 // argument (taken) indicating whether or not the branch was taken.
 void PREDICTOR::update_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
+    //Update branch history
     int index = br->instruction_addr & 1024;
     alpha.localPrediction[alpha.localHistory[index]] <<= 1;
-    if(!taken) //if not taken, << puts a 0 in lsb
+    if(taken) //if not taken, << puts a 0 in lsb
     {
         alpha.localPrediction[alpha.localHistory[index]] |= 1;
     }
+
+    //Update prediction counter
+
 }
 
 
