@@ -76,7 +76,6 @@ static bool get_branch_prediction(const branch_record_c* br, const op_state_c* o
 
 static void update_branch_predictor(const branch_record_c* br, const op_state_c* os, bool taken)
 {
-
     //Update branch history pattern
     int index = br->instruction_addr & (1023);
     //shift history
@@ -98,8 +97,8 @@ static void update_branch_predictor(const branch_record_c* br, const op_state_c*
     else //not taken
     {
         //not taken, decrement counter, saturate at 0
-        //if(alpha.localPrediction[alpha.localHistory[index]] > 0)
-         //   alpha.localPrediction[alpha.localHistory[index]] -= 1;
+        if(alpha.localPrediction[alpha.localHistory[index]] > 0)
+            alpha.localPrediction[alpha.localHistory[index]] -= 1;
     }
 }
 //======================================
