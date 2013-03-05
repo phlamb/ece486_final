@@ -60,16 +60,8 @@ void PREDICTOR::update_branch_predictor(const branch_record_c* br, const op_stat
 {
     //Update branch history pattern
     int index = br->instruction_addr & (1023);
-    //shift history
-    alpha.localHistory[index] <<= 1;
-    //mask off bits higher than 10 used bits
-    alpha.localHistory[index] &= (1023);
 
-    //If taken, put 1 (taken) in lsb, if not taken 0 already in lsb from <<
-    if(taken)
-        alpha.localHistory[index] |= 1;
-
-    //Update prediction counter
+    //Update prediction (BEFORE! updating history (index into prediction))
     if(taken)
     {
         //If taken, increment counter, saturate at 7
@@ -82,6 +74,17 @@ void PREDICTOR::update_branch_predictor(const branch_record_c* br, const op_stat
         if(alpha.localPrediction[alpha.localHistory[index]] > 0)
             alpha.localPrediction[alpha.localHistory[index]] -= 1;
     }
+
+    //Update local history
+    //shift history
+    alpha.localHistory[index] <<= 1;
+    //mask off bits higher than 10 used bits
+    alpha.localHistory[index] &= (1023);
+    //If taken, put 1 (taken) in lsb, if not taken 0 already in lsb from <<
+    if(taken)
+        alpha.localHistory[index] |= 1;
+
+    //Update prediction counter
 }
 //======================================
 // Target Predictor Implementation
