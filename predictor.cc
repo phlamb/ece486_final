@@ -2,29 +2,13 @@
 
 #include "predictor.h"
 
-#define PREDICTOR_LOCAL 0
-#define PREDICTOR_GLOBAL 1
-
-static bool get_branch_prediction(const branch_record_c* br, const op_state_c* os);
-static void update_branch_predictor(const branch_record_c* br, const op_state_c* os, bool taken);
-static void get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address);
-static void update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
-
-
-struct AlphaPredictorStorage
+PREDICTOR::PREDICTOR()
 {
-    uint16_t    localHistory[1024];     //Size: 10b x 1024
-    uint8_t     localPrediction[1024];  //Size: 3b x 1024
-    uint8_t     globalPrediction[4096]; //Size: 2b x 4096
-    uint8_t     choicePrediction[4096]; //Size: 2b x 4096
-    //Total Size: 3.712x10^3 Bytes 
-    // 2^(11.858) Bytes
-    // < 4k Bytes
-};
+    //Initialize alpha predictor storage to 0
+    memset(&alpha, 0, sizeof(AlphaPredictorStorage));
+}
 
-static AlphaPredictorStorage alpha;
-
-static uint8_t choosePredictor()
+uint8_t PREDICTOR::choose_predictor()
 {
     return PREDICTOR_LOCAL;
 }
@@ -51,15 +35,14 @@ void PREDICTOR::update_predictor(const branch_record_c* br, const op_state_c* os
 //======================================
 // Branch Predictor Implementation
 // ====================================
-static bool get_branch_prediction(const branch_record_c* br, const op_state_c* os)
+bool PREDICTOR::get_branch_prediction(const branch_record_c* br, const op_state_c* os)
 {
-
     //br->debug_print();
     bool prediction = true;
     if(!br->is_conditional)
         return true;
 
-    if(choosePredictor() == PREDICTOR_LOCAL)
+    if(choose_predictor() == PREDICTOR_LOCAL)
     {
         int index = br->instruction_addr & (1023);
         //mask and use MSB to determine whether to branch (0-3: not taken, 4-7: taken)
@@ -71,10 +54,9 @@ static bool get_branch_prediction(const branch_record_c* br, const op_state_c* o
     }
 
     return prediction;   // true for taken, false for not taken
-    
 }
 
-static void update_branch_predictor(const branch_record_c* br, const op_state_c* os, bool taken)
+void PREDICTOR::update_branch_predictor(const branch_record_c* br, const op_state_c* os, bool taken)
 {
     //Update branch history pattern
     int index = br->instruction_addr & (1023);
@@ -104,12 +86,12 @@ static void update_branch_predictor(const branch_record_c* br, const op_state_c*
 //======================================
 // Target Predictor Implementation
 // ====================================
-static void get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address)
+void PREDICTOR::get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address)
 {
 
 }
 
-static void update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
+void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
 
 }
