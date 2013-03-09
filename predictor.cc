@@ -72,18 +72,21 @@ bool PREDICTOR::get_branch_prediction(const branch_record_c* br, const op_state_
     if(!br->is_conditional)
         return true;
 
+
+    //mask and use MSB to determine whether to branch (0-3: not taken, 4-7: taken)
+    int index = br->instruction_addr & (1023);
+    last_local_prediction = (bool)(alpha.localPrediction[alpha.localHistory[index]] & 0x4);
+
+    last_global_prediction = (bool)(alpha.globalPrediction[alpha.globalHistory] & 0x2);
+
+
     if(choose_predictor() == PREDICTOR_LOCAL)
     {
-        int index = br->instruction_addr & (1023);
-        //mask and use MSB to determine whether to branch (0-3: not taken, 4-7: taken)
-        prediction = (bool)(alpha.localPrediction[alpha.localHistory[index]] & 0x4);
-        //printf("Predicting with predictor %x = %x\n", alpha.localHistory[index], alpha.localPrediction[alpha.localHistory[index]]);
-        //printf("Predicting %d (%s)\n", alpha.localPrediction[alpha.localHistory[index]] & 0x4, prediction ? "True" : "False");
-        return prediction;
+        return last_local_prediction;
     }
     else //PREDICTOR_GLOBAL
     {
-        return (bool)(alpha.globalPrediction[alpha.globalHistory] & 0x2);
+        return last_global_prediction;
     }
 }
 
@@ -179,36 +182,35 @@ uint8_t PREDICTOR::choose_predictor()
 {
     // If counter is 2 or 3 predict local. 1 or 2 predict global
     if(alpha.choicePrediction[alpha.globalHistory] & 2)
+    {
+        printf("L");
         return PREDICTOR_LOCAL;
-    
+    }
     else
+    {
+        printf("G");
         return PREDICTOR_GLOBAL;
+    }
     
 }
-
-
-
-
 
 void PREDICTOR::update_choose_predictor(bool taken)
 {
     
-    if(taken)
-    {
-        
-        // If Taken, increment counter and saturate at 3
-        if(alpha.choicePrediction[alpha.globalHistory] < 3)
-            alpha.choicePrediction[alpha.globalHistory] += 1;
-        
-    }
-    
-    else //not taken
-    {
-        // If not taken, decrement counter and saturate at 0
-        if (alpha.choicePrediction[alpha.globalHistory] > 0)
-            alpha.choicePrediction[alpha.globalHistory] -= 1;
-    }
-    
+    //If both predicted correctly, or both predicted incorrectly,
+    //don't update chooser.
+    if(last_local_prediction == last_global_prediction)
+        return;
+
+    //If global predicts correctly and local predicts incorrectly, 
+    //update chooser towards global
+    if(taken == last_global_prediction && alpha.choicePrediction[alpha.globalHistory] > 0)
+        alpha.choicePrediction[alpha.globalHistory] -= 1;
+
+    //If local predicts correctly and local predicts incorrectly, 
+    //update chooser towards local
+    if(taken == last_local_prediction && alpha.choicePrediction[alpha.globalHistory] < 3)
+        alpha.choicePrediction[alpha.globalHistory] += 1;
 }
 
 

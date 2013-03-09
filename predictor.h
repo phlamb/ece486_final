@@ -61,6 +61,8 @@ private:
 
     //private variables
     AlphaPredictorStorage alpha;
+    bool last_local_prediction;
+    bool last_global_prediction;
 
 #if EXTRACT_TRACE
     FILE *tracefp;
