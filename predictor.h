@@ -16,6 +16,14 @@
 #define PREDICTOR_LOCAL 0
 #define PREDICTOR_GLOBAL 1
 
+
+#define EXTRACT_TRACE 1
+
+#if EXTRACT_TRACE
+    #include <stdio.h>
+    #include <stdlib.h>
+#endif
+
 struct AlphaPredictorStorage
 {
     uint16_t    localHistory[1024];     //Size: 10b x 1024
@@ -32,6 +40,7 @@ class PREDICTOR
 {
 public:
     PREDICTOR();
+    ~PREDICTOR();
     bool get_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address);
     void update_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
 
@@ -42,9 +51,16 @@ private:
     void get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address);
     void update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
 
+    //Functions to create ascii trace files
+    void extract_trace(const branch_record_c* br, const op_state_c* os);
+    void extract_trace_update(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
 
     //private variables
     AlphaPredictorStorage alpha;
+
+#if EXTRACT_TRACE
+    FILE *tracefp;
+#endif
 };
 
 

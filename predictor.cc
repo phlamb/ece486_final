@@ -4,8 +4,21 @@
 
 PREDICTOR::PREDICTOR()
 {
+#if EXTRACT_TRACE
+   tracefp = fopen("extract.trace", "w"); 
+   printf("Creating trace file extract.trace\n");
+#endif
     //Initialize alpha predictor storage to 0
     memset(&alpha, 0, sizeof(AlphaPredictorStorage));
+}
+
+PREDICTOR::~PREDICTOR()
+{
+#if EXTRACT_TRACE
+    fclose(tracefp);
+    printf("Closing trace file\n");
+
+#endif 
 }
 
 uint8_t PREDICTOR::choose_predictor()
@@ -15,6 +28,11 @@ uint8_t PREDICTOR::choose_predictor()
 
 bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address)
 {
+#if EXTRACT_TRACE
+    extract_trace(br, os);
+    return true;
+#endif
+
     bool prediction = get_branch_prediction(br, os);
 
     get_target_prediction(br, os, predicted_target_address);
@@ -27,6 +45,10 @@ bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, 
 // argument (taken) indicating whether or not the branch was taken.
 void PREDICTOR::update_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
+#if EXTRACT_TRACE
+    extract_trace_update(br, os, taken, actual_target_address);
+    return;
+#endif
     //update branch predictor
     update_branch_predictor(br, os, taken);
 }
@@ -38,7 +60,6 @@ void PREDICTOR::update_predictor(const branch_record_c* br, const op_state_c* os
 bool PREDICTOR::get_branch_prediction(const branch_record_c* br, const op_state_c* os)
 {
     //br->debug_print();
-    bool prediction = true;
     if(!br->is_conditional)
         return true;
 
@@ -52,8 +73,6 @@ bool PREDICTOR::get_branch_prediction(const branch_record_c* br, const op_state_
     {
         return false; 
     }
-
-    return prediction;   // true for taken, false for not taken
 }
 
 void PREDICTOR::update_branch_predictor(const branch_record_c* br, const op_state_c* os, bool taken)
@@ -97,4 +116,17 @@ void PREDICTOR::get_target_prediction(const branch_record_c* br, const op_state_
 void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
 
+}
+
+//=====================================
+// Trace Extraction
+//=====================================
+void PREDICTOR::extract_trace(const branch_record_c* br, const op_state_c* os)
+{
+    fprintf(tracefp, "%h %d %d %d", br->instruction_addr, br->is_conditional, br->is_call, br->is_return);
+}
+
+void PREDICTOR::extract_trace_update(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
+{
+    fprintf(tracefp, "%h %d\n", actual_target_address, taken);
 }
