@@ -59,7 +59,7 @@ void PREDICTOR::update_predictor(const branch_record_c* br, const op_state_c* os
 // ====================================
 bool PREDICTOR::get_branch_prediction(const branch_record_c* br, const op_state_c* os)
 {
-    //br->debug_print();
+    bool prediction;
     if(!br->is_conditional)
         return true;
 
@@ -67,7 +67,9 @@ bool PREDICTOR::get_branch_prediction(const branch_record_c* br, const op_state_
     {
         int index = br->instruction_addr & (1023);
         //mask and use MSB to determine whether to branch (0-3: not taken, 4-7: taken)
-        return (bool)alpha.localPrediction[alpha.localHistory[index]] & 0x4;
+        prediction = (bool)alpha.localPrediction[alpha.localHistory[index]] & 0x4;
+        printf("Predicting: %d\n", (int)prediction);
+        return prediction;
     }
     else //PREDICTOR_GLOBAL
     {
@@ -123,10 +125,14 @@ void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_stat
 //=====================================
 void PREDICTOR::extract_trace(const branch_record_c* br, const op_state_c* os)
 {
+#if EXTRACT_TRACE
     fprintf(tracefp, "%x %d %d %d", br->instruction_addr, (int)br->is_conditional, (int)br->is_call, (int)br->is_return);
+#endif
 }
 
 void PREDICTOR::extract_trace_update(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
+#if EXTRACT_TRACE
     fprintf(tracefp, " %x %d\n", actual_target_address, (int)taken);
+#endif
 }

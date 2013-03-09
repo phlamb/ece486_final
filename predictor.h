@@ -17,7 +17,7 @@
 #define PREDICTOR_GLOBAL 1
 
 
-#define EXTRACT_TRACE 1
+#define EXTRACT_TRACE 0
 
 #if EXTRACT_TRACE
     #include <stdio.h>
