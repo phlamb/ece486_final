@@ -68,7 +68,6 @@ bool PREDICTOR::get_branch_prediction(const branch_record_c* br, const op_state_
         int index = br->instruction_addr & (1023);
         //mask and use MSB to determine whether to branch (0-3: not taken, 4-7: taken)
         prediction = (bool)alpha.localPrediction[alpha.localHistory[index]] & 0x4;
-        printf("Predicting: %d\n", (int)prediction);
         return prediction;
     }
     else //PREDICTOR_GLOBAL
@@ -133,6 +132,6 @@ void PREDICTOR::extract_trace(const branch_record_c* br, const op_state_c* os)
 void PREDICTOR::extract_trace_update(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
 #if EXTRACT_TRACE
-    fprintf(tracefp, " %x %d\n", actual_target_address, (int)taken);
+    fprintf(tracefp, " %d %x\n", (int)taken, actual_target_address);
 #endif
 }

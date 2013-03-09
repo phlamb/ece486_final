@@ -10,7 +10,7 @@ int main(int argc, const char* argv[])
     FILE* fp;
     char buf[BUFSIZE];
     branch_record_c br;
-    uint target_addr;
+    int target_addr = 0x100;
     bool taken;
     PREDICTOR p;
     uint predicted_addr;
@@ -34,15 +34,15 @@ int main(int argc, const char* argv[])
     printf("PC\tCond\tCall\tRet\tP_Tgt\tP_Taken\tTgt\tTaken\tTaken?\tTgt?\n");
     while(fgets(buf, BUFSIZE - 1, fp) != NULL)
     {
-
-        sscanf(buf, "%x %d %d %d %x %d", 
+        sscanf(buf, "%x%d%d%d%d%x\n", 
                 &br.instruction_addr, 
                 (int*)&br.is_conditional, 
                 (int*)&br.is_call, 
                 (int*)&br.is_return,
-                &target_addr,
-                (int*)&taken);
+                (int*)&taken,
+                &target_addr);
 
+        printf("addr: %x\n", target_addr);
         predicted_taken = p.get_prediction(&br, 0, &predicted_addr);
 
         printf("%X\t%d\t%d\t%d\t%X\t%d\t%X\t%d\t%d\t%d\n",
