@@ -123,10 +123,10 @@ void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_stat
 //=====================================
 void PREDICTOR::extract_trace(const branch_record_c* br, const op_state_c* os)
 {
-    fprintf(tracefp, "%h %d %d %d", br->instruction_addr, br->is_conditional, br->is_call, br->is_return);
+    fprintf(tracefp, "%x %d %d %d", br->instruction_addr, (int)br->is_conditional, (int)br->is_call, (int)br->is_return);
 }
 
 void PREDICTOR::extract_trace_update(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
-    fprintf(tracefp, "%h %d\n", actual_target_address, taken);
+    fprintf(tracefp, " %x %d\n", actual_target_address, (int)taken);
 }
