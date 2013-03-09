@@ -30,6 +30,7 @@ struct AlphaPredictorStorage
     uint8_t     localPrediction[1024];  //Size: 3b x 1024
     uint8_t     globalPrediction[4096]; //Size: 2b x 4096
     uint8_t     choicePrediction[4096]; //Size: 2b x 4096
+
     //Total Size: 3.712x10^3 Bytes 
     // 2^(11.858) Bytes
     // < 4k Bytes
@@ -50,10 +51,13 @@ private:
     void update_branch_predictor(const branch_record_c* br, const op_state_c* os, bool taken);
     void get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address);
     void update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
-
     //Functions to create ascii trace files
     void extract_trace(const branch_record_c* br, const op_state_c* os);
     void extract_trace_update(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
+
+    void update_global_history(bool taken);
+    void update_choose_predictor(bool taken);
+    void update_global_prediction(bool taken);
 
     //private variables
     AlphaPredictorStorage alpha;
