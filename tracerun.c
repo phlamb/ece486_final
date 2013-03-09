@@ -40,7 +40,7 @@ int main(int argc, const char* argv[])
                 (int*)&br.is_call, 
                 (int*)&br.is_return,
                 (int*)&taken,
-                &target_addr)
+                &target_addr);
 
         predicted_taken = p.get_prediction(&br, 0, &predicted_addr);
 
