@@ -40,9 +40,8 @@ int main(int argc, const char* argv[])
                 (int*)&br.is_call, 
                 (int*)&br.is_return,
                 (int*)&taken,
-                &target_addr);
+                &target_addr)
 
-        printf("addr: %x\n", target_addr);
         predicted_taken = p.get_prediction(&br, 0, &predicted_addr);
 
         printf("%X\t%d\t%d\t%d\t%X\t%d\t%X\t%d\t%d\t%d\n",
@@ -57,9 +56,7 @@ int main(int argc, const char* argv[])
                 (int)(taken == predicted_taken),
                 (int)(target_addr == predicted_addr));
 
-
         p.update_predictor(&br, 0, taken, target_addr);
-
     }
 
 }
