@@ -22,13 +22,6 @@ PREDICTOR::~PREDICTOR()
 #endif 
 }
 
-uint8_t PREDICTOR::choose_predictor()
-{
-    return PREDICTOR_LOCAL;
-}
-
-
-
 
 bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address)
 {
@@ -87,7 +80,7 @@ bool PREDICTOR::get_branch_prediction(const branch_record_c* br, const op_state_
     }
     else //PREDICTOR_GLOBAL
     {
-        return (bool)alpha.globalPrediction[globalHistory] & 0x2;
+        return (bool)alpha.globalPrediction[alpha.globalHistory] & 0x2;
     }
 }
 
@@ -136,11 +129,13 @@ void PREDICTOR::update_global_history(bool taken)
 
     if(taken)
     {
-        (globalHistory + 1) &= (4095); // increment path history and mask upper 4 bits
+        alpha.globalHistory + 1;
+        alpha.globalHistory &= (4095); // increment path history and mask upper 4 bits
     }
     else //not taken
     {
-        (globalHistory <<= 1) &= (4095); // left shift global history and mask upper 4 bits
+        (alpha.globalHistory <<= 1);
+         alpha.globalHistory &= (4095);// left shift global history and mask upper 4 bits
     }
 
 }
@@ -154,16 +149,16 @@ void PREDICTOR::update_global_prediction(bool taken)
     if(taken){
     
         // If Taken, increment counter and saturate at 3
-        if(alpha.globalPrediction[globalHistory] < 3)
-            alpha.globalPrediction[globalHistory] += 1;
+        if(alpha.globalPrediction[alpha.globalHistory] < 3)
+            alpha.globalPrediction[alpha.globalHistory] += 1;
         
     }
 
     else //not taken
     {
         // If not taken, decrement counter and saturate at 0
-        if (alpha.globalPrediction[globalHistory] > 0)
-            alpha.globalPrediction[globalHistory] -= 1);
+        if (alpha.globalPrediction[alpha.globalHistory] > 0)
+            alpha.globalPrediction[alpha.globalHistory] -= 1;
     }
 
 
@@ -179,7 +174,7 @@ uint8_t PREDICTOR::choose_predictor()
 {
     
     // If counter is 2 or 3 predict local. 1 or 2 predict global
-    if alpha.choicePrediction[globalHistory] & 2
+    if(alpha.choicePrediction[alpha.globalHistory] & 2)
         return PREDICTOR_LOCAL;
     
     else
@@ -198,16 +193,16 @@ void PREDICTOR::update_choose_predictor(bool taken)
     {
         
         // If Taken, increment counter and saturate at 3
-        if(alpha.choicePrediction[globalHistory] < 3)
-            alpha.choicePrediction[globalHistory] += 1;
+        if(alpha.choicePrediction[alpha.globalHistory] < 3)
+            alpha.choicePrediction[alpha.globalHistory] += 1;
         
     }
     
     else //not taken
     {
         // If not taken, decrement counter and saturate at 0
-        if (alpha.choicePrediction[globalHistory] > 0)
-            alpha.choicePrediction[globalHistory] -= 1);
+        if (alpha.choicePrediction[alpha.globalHistory] > 0)
+            alpha.choicePrediction[alpha.globalHistory] -= 1;
     }
     
 }
