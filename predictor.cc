@@ -52,9 +52,9 @@ void PREDICTOR::update_predictor(const branch_record_c* br, const op_state_c* os
 #endif
     //update branch predictor
     update_branch_predictor(br, os, taken);
-    update_global_history(taken);
     update_global_prediction(taken);
     update_choose_predictor(taken);
+    update_global_history(taken);
     
 }
 
@@ -133,7 +133,8 @@ void PREDICTOR::update_global_history(bool taken)
 
     if(taken)
     {
-        alpha.globalHistory + 1;
+        alpha.globalHistory <<= 1;
+        alpha.globalHistory += 1;        
         alpha.globalHistory &= (4095); // increment path history and mask upper 4 bits
     }
     else //not taken
