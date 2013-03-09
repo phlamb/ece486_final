@@ -76,12 +76,14 @@ bool PREDICTOR::get_branch_prediction(const branch_record_c* br, const op_state_
     {
         int index = br->instruction_addr & (1023);
         //mask and use MSB to determine whether to branch (0-3: not taken, 4-7: taken)
-        prediction = (bool)alpha.localPrediction[alpha.localHistory[index]] & 0x4;
+        prediction = (bool)(alpha.localPrediction[alpha.localHistory[index]] & 0x4);
+        //printf("Predicting with predictor %x = %x\n", alpha.localHistory[index], alpha.localPrediction[alpha.localHistory[index]]);
+        //printf("Predicting %d (%s)\n", alpha.localPrediction[alpha.localHistory[index]] & 0x4, prediction ? "True" : "False");
         return prediction;
     }
     else //PREDICTOR_GLOBAL
     {
-        return (bool)alpha.globalPrediction[alpha.globalHistory] & 0x2;
+        return (bool)(alpha.globalPrediction[alpha.globalHistory] & 0x2);
     }
 }
 
@@ -107,6 +109,7 @@ void PREDICTOR::update_branch_predictor(const branch_record_c* br, const op_stat
         if(alpha.localPrediction[alpha.localHistory[index]] > 0)
             alpha.localPrediction[alpha.localHistory[index]] -= 1;
     }
+    //printf("Updating Local Counter %x = %x\n", alpha.localHistory[index], alpha.localPrediction[alpha.localHistory[index]]);
 
     //Update local history
     //shift history
@@ -173,7 +176,6 @@ void PREDICTOR::update_global_prediction(bool taken)
 // ====================================
 uint8_t PREDICTOR::choose_predictor()
 {
-    
     // If counter is 2 or 3 predict local. 1 or 2 predict global
     if(alpha.choicePrediction[alpha.globalHistory] & 2)
         return PREDICTOR_LOCAL;
