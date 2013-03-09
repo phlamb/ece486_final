@@ -17,4 +17,5 @@ predictor
 
 #vim temp files
 *.swp
+*.swo
 *.un~
