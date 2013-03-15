@@ -10,6 +10,7 @@ PREDICTOR::PREDICTOR()
 #endif
     //Initialize alpha predictor storage to 0
     memset(&alpha, 0, sizeof(AlphaPredictorStorage));
+    memset(&tgtpred, 0, sizeof(TargetPredictorStorage));
 }
 
 
@@ -122,8 +123,6 @@ void PREDICTOR::update_branch_predictor(const branch_record_c* br, const op_stat
     //If taken, put 1 (taken) in lsb, if not taken 0 already in lsb from <<
     if(taken)
         alpha.localHistory[index] |= 1;
-
-    //Update prediction counter
 }
 
 
@@ -200,17 +199,23 @@ void PREDICTOR::update_choose_predictor(bool taken)
     //If both predicted correctly, or both predicted incorrectly,
     //don't update chooser.
     if(last_local_prediction == last_global_prediction)
+    {
         return;
+    }
 
     //If global predicts correctly and local predicts incorrectly, 
     //update chooser towards global
     if(taken == last_global_prediction && alpha.choicePrediction[alpha.globalHistory] > 0)
+    {
         alpha.choicePrediction[alpha.globalHistory] -= 1;
+    }
 
     //If local predicts correctly and local predicts incorrectly, 
     //update chooser towards local
     if(taken == last_local_prediction && alpha.choicePrediction[alpha.globalHistory] < 3)
+    {
         alpha.choicePrediction[alpha.globalHistory] += 1;
+    }
 }
 
 

@@ -37,6 +37,14 @@ struct AlphaPredictorStorage
     uint16_t    globalHistory;          //Size: 12b
 };
 
+#define TP_INDEX_BITS           10
+#define TP_INDEX_SHIFT_BITS     2
+
+struct TargetPredictorStorage
+{
+    uint32_t    history[(1 << TP_INDEX_BITS)];
+};
+
 class PREDICTOR
 {
 public:
@@ -61,6 +69,7 @@ private:
 
     //private variables
     AlphaPredictorStorage alpha;
+    TargetPredictorStorage tgtpred;
     bool last_local_prediction;
     bool last_global_prediction;
 
