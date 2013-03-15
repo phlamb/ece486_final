@@ -32,7 +32,7 @@ bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, 
 #endif
 
     bool prediction = get_branch_prediction(br, os);
-
+    
     get_target_prediction(br, os, predicted_target_address);
 
     return prediction;
@@ -182,12 +182,12 @@ uint8_t PREDICTOR::choose_predictor()
     // If counter is 2 or 3 predict local. 1 or 2 predict global
     if(alpha.choicePrediction[alpha.globalHistory] & 2)
     {
-        printf("L");
+       // printf("L");
         return PREDICTOR_LOCAL;
     }
     else
     {
-        printf("G");
+       // printf("G");
         return PREDICTOR_GLOBAL;
     }
     
@@ -226,13 +226,21 @@ void PREDICTOR::update_choose_predictor(bool taken)
 // ====================================
 void PREDICTOR::get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address)
 {
-
+    uint index = br->instruction_addr >> TP_INDEX_SHIFT_BITS;
+    * predicted_target_address = tgtpred.history[(index & 1023)];
+    
 }
+
+
 
 void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
-
+    uint index = br->instruction_addr >> TP_INDEX_SHIFT_BITS;
+    tgtpred.history[(index & 1023)] = actual_target_address;
+    
 }
+
+
 
 //=====================================
 // Trace Extraction
