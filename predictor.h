@@ -39,10 +39,15 @@ struct AlphaPredictorStorage
 
 #define TP_INDEX_BITS           10
 #define TP_INDEX_SHIFT_BITS     0
+#define TP_STACK_SIZE           32
 
 struct TargetPredictorStorage
 {
     uint32_t    history[(1 << TP_INDEX_BITS)];
+
+    uint32_t    stack[TP_STACK_SIZE];
+    uint32_t    stack_head;
+    uint32_t    stack_tail;
 };
 
 class PREDICTOR
