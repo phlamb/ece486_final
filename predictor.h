@@ -38,7 +38,7 @@ struct AlphaPredictorStorage
 };
 
 #define TP_INDEX_BITS           10
-#define TP_INDEX_SHIFT_BITS     2
+#define TP_INDEX_SHIFT_BITS     0
 
 struct TargetPredictorStorage
 {

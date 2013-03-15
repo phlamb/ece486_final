@@ -57,6 +57,7 @@ void PREDICTOR::update_predictor(const branch_record_c* br, const op_state_c* os
     update_choose_predictor(taken);
     update_global_history(taken);
     
+    update_target_predictor(br,os,taken,actual_target_address);
 }
 
 
@@ -227,7 +228,9 @@ void PREDICTOR::update_choose_predictor(bool taken)
 void PREDICTOR::get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address)
 {
     uint index = br->instruction_addr >> TP_INDEX_SHIFT_BITS;
-    * predicted_target_address = tgtpred.history[(index & 1023)];
+    *predicted_target_address = tgtpred.history[(index & 1023)];
+    //printf("Predicting: %x\n", *predicted_target_address);
+    //*predicted_target_address = 0;
     
 }
 
@@ -237,7 +240,6 @@ void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_stat
 {
     uint index = br->instruction_addr >> TP_INDEX_SHIFT_BITS;
     tgtpred.history[(index & 1023)] = actual_target_address;
-    
 }
 
 
