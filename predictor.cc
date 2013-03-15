@@ -227,19 +227,41 @@ void PREDICTOR::update_choose_predictor(bool taken)
 // ====================================
 void PREDICTOR::get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address)
 {
+    //If this is a return, pop from call address stack
+    if(br->is_return)
+    {
+        *predicted_target_address = tgtpred.stack[tgtpred.stack_top];
+        //if(tgtpred.stack_top > tgtpred.stack_bottom)
+        //    tgtpred.stack_top--;
+        tgtpred.stack_top = (tgtpred.stack_top - 1) % TP_STACK_SIZE;
+
+        return;
+    }
+
+    //Fetch prediction from branch target cache
     uint index = br->instruction_addr >> TP_INDEX_SHIFT_BITS;
-    *predicted_target_address = tgtpred.history[(index & 1023)];
-    //printf("Predicting: %x\n", *predicted_target_address);
-    //*predicted_target_address = 0;
-    
+    *predicted_target_address = tgtpred.history[(index & TP_INDEX_MASK)];
 }
 
 
 
 void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
+    //if the branch was a call, push next address following branch instruction onto call address stack
+    // if stack is full, wrap around and overwrite oldest value on stack
+    if(br->is_call)
+    {
+        tgtpred.stack_top = tgtpred.stack_top + 1;
+        if(tgtpred.stack_top > TP_STACK_SIZE - 1)
+        {
+            tgtpred.stack_top %= TP_STACK_SIZE;
+            tgtpred.stack_bottom = (tgtpred.stack_bottom + 1) % TP_STACK_SIZE;
+        }
+        tgtpred.stack[tgtpred.stack_top] = br->instruction_next_addr;
+    }
+
     uint index = br->instruction_addr >> TP_INDEX_SHIFT_BITS;
-    tgtpred.history[(index & 1023)] = actual_target_address;
+    tgtpred.history[(index & TP_INDEX_MASK)] = actual_target_address;
 }
 
 
@@ -247,16 +269,16 @@ void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_stat
 //=====================================
 // Trace Extraction
 //=====================================
+#if EXTRACT_TRACE
 void PREDICTOR::extract_trace(const branch_record_c* br, const op_state_c* os)
 {
-#if EXTRACT_TRACE
     fprintf(tracefp, "%x %d %d %d", br->instruction_addr, (int)br->is_conditional, (int)br->is_call, (int)br->is_return);
-#endif
 }
+#endif
 
+#if EXTRACT_TRACE
 void PREDICTOR::extract_trace_update(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
-#if EXTRACT_TRACE
     fprintf(tracefp, " %d %x\n", (int)taken, actual_target_address);
-#endif
 }
+#endif

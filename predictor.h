@@ -37,17 +37,20 @@ struct AlphaPredictorStorage
     uint16_t    globalHistory;          //Size: 12b
 };
 
-#define TP_INDEX_BITS           10
+#define TP_INDEX_BITS           10 
+#define TP_INDEX_MASK           ((1 << TP_INDEX_BITS) - 1)
 #define TP_INDEX_SHIFT_BITS     0
-#define TP_STACK_SIZE           32
+#define TP_STACK_SIZE           16
 
 struct TargetPredictorStorage
 {
+    //History cache
     uint32_t    history[(1 << TP_INDEX_BITS)];
 
+    //Call location stack
     uint32_t    stack[TP_STACK_SIZE];
-    uint32_t    stack_head;
-    uint32_t    stack_tail;
+    uint32_t    stack_top;
+    uint32_t    stack_bottom;
 };
 
 class PREDICTOR
@@ -64,13 +67,15 @@ private:
     void update_branch_predictor(const branch_record_c* br, const op_state_c* os, bool taken);
     void get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address);
     void update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
-    //Functions to create ascii trace files
-    void extract_trace(const branch_record_c* br, const op_state_c* os);
-    void extract_trace_update(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
-
     void update_global_history(bool taken);
     void update_choose_predictor(bool taken);
     void update_global_prediction(bool taken);
+    
+#ifdef EXTRACT_TRACE
+    //Functions to create ascii trace files
+    void extract_trace(const branch_record_c* br, const op_state_c* os);
+    void extract_trace_update(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
+#endif //EXTRACT_TRACE
 
     //private variables
     AlphaPredictorStorage alpha;
@@ -84,5 +89,5 @@ private:
 };
 
 
-#endif // PREDICTOR_H_SEEN
+#endif //PREDICTOR_H_SEEN
 
