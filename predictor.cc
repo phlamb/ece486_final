@@ -1,15 +1,16 @@
-
-
 #include "predictor.h"
 
 PREDICTOR::PREDICTOR()
 {
 #if EXTRACT_TRACE
-   tracefp = fopen("extract.trace", "w"); 
-   printf("Creating trace file extract.trace\n");
+    //get file handle for file to write trace information to
+    tracefp = fopen("extract.trace", "w"); 
+    printf("Creating trace file extract.trace\n");
 #endif
     //Initialize alpha predictor storage to 0
     memset(&alpha, 0, sizeof(AlphaPredictorStorage));
+    
+    //Initialize target predictor structure to 0
     memset(&tgtpred, 0, sizeof(TargetPredictorStorage));
 }
 
@@ -17,9 +18,9 @@ PREDICTOR::PREDICTOR()
 PREDICTOR::~PREDICTOR()
 {
 #if EXTRACT_TRACE
+    //Close trace file export handle
     fclose(tracefp);
     printf("Closing trace file\n");
-
 #endif 
 }
 
@@ -27,6 +28,7 @@ PREDICTOR::~PREDICTOR()
 bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address)
 {
 #if EXTRACT_TRACE
+    //print the current trace info to file and return
     extract_trace(br, os);
     return true;
 #endif
@@ -38,9 +40,6 @@ bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, 
     return prediction;
 }
 
-
-
-
 // Update the predictor after a prediction has been made.  This should accept
 // the branch record (br) and architectural state (os), as well as a third
 // argument (taken) indicating whether or not the branch was taken.
@@ -48,15 +47,20 @@ bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, 
 void PREDICTOR::update_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
 #if EXTRACT_TRACE
+    //update the extracted trace and return
     extract_trace_update(br, os, taken, actual_target_address);
     return;
 #endif
-    //update branch predictor
+    //update local branch predictor
     update_branch_predictor(br, os, taken);
+    //update global branch predictor
     update_global_prediction(taken);
+    //update tournament chooser
     update_choose_predictor(taken);
+    //update global path history
     update_global_history(taken);
     
+    //update branch target predictor
     update_target_predictor(br,os,taken,actual_target_address);
 }
 
@@ -92,10 +96,12 @@ bool PREDICTOR::get_branch_prediction(const branch_record_c* br, const op_state_
     }
 }
 
-
-
-
-
+//-----------------------------------------------
+// update_branch_predictor
+//
+// Updates branch predictor local history and 
+//  local prediction counters
+//-----------------------------------------------
 void PREDICTOR::update_branch_predictor(const branch_record_c* br, const op_state_c* os, bool taken)
 {
     //Update branch history pattern
@@ -114,8 +120,6 @@ void PREDICTOR::update_branch_predictor(const branch_record_c* br, const op_stat
         if(alpha.localPrediction[alpha.localHistory[index]] > 0)
             alpha.localPrediction[alpha.localHistory[index]] -= 1;
     }
-    //printf("Updating Local Counter %x = %x\n", alpha.localHistory[index], alpha.localPrediction[alpha.localHistory[index]]);
-
     //Update local history
     //shift history
     alpha.localHistory[index] <<= 1;
@@ -130,7 +134,7 @@ void PREDICTOR::update_branch_predictor(const branch_record_c* br, const op_stat
 
 //======================================
 // Global Predictor implementation
-// ====================================
+// =====================================
 void PREDICTOR::update_global_history(bool taken)
 {
 
@@ -222,17 +226,15 @@ void PREDICTOR::update_choose_predictor(bool taken)
 
 
 
-//======================================
-// Target Predictor Implementation
-// ====================================
+//==========================================
+// Target Predictor Implementation 
+// =========================================
 void PREDICTOR::get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address)
 {
     //If this is a return, pop from call address stack
     if(br->is_return)
     {
         *predicted_target_address = tgtpred.stack[tgtpred.stack_top];
-        //if(tgtpred.stack_top > tgtpred.stack_bottom)
-        //    tgtpred.stack_top--;
         tgtpred.stack_top = (tgtpred.stack_top - 1) % TP_STACK_SIZE;
 
         return;
@@ -242,8 +244,6 @@ void PREDICTOR::get_target_prediction(const branch_record_c* br, const op_state_
     uint index = br->instruction_addr >> TP_INDEX_SHIFT_BITS;
     *predicted_target_address = tgtpred.history[(index & TP_INDEX_MASK)];
 }
-
-
 
 void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
