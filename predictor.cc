@@ -243,6 +243,9 @@ void PREDICTOR::get_target_prediction(const branch_record_c* br, const op_state_
     //Fetch prediction from branch target cache
     uint index = br->instruction_addr >> TP_INDEX_SHIFT_BITS;
     *predicted_target_address = tgtpred.history[(index & TP_INDEX_MASK)];
+    //add relative branch target to pc
+    //printf("Predicted offset: %x, predicting: %x\n", *predicted_target_address, *predicted_target_address + br->instruction_addr);
+    *predicted_target_address += br->instruction_addr;
 }
 
 void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
@@ -261,7 +264,9 @@ void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_stat
     }
 
     uint index = br->instruction_addr >> TP_INDEX_SHIFT_BITS;
-    tgtpred.history[(index & TP_INDEX_MASK)] = actual_target_address;
+    tgtpred.history[(index & TP_INDEX_MASK)] = (actual_target_address - br->instruction_addr) & TP_OFFSET_MASK;
+    //printf("Offset: %x\n", (actual_target_address - br->instruction_addr) & TP_OFFSET_MASK);
+    //printf("Actual: %x\n", (actual_target_address));
 }
 
 

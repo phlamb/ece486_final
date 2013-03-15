@@ -38,7 +38,8 @@ struct AlphaPredictorStorage
 };
 
 #define TP_INDEX_BITS           10 
-#define TP_INDEX_MASK           ((1 << TP_INDEX_BITS) - 1)
+#define TP_OFFSET_MASK          ((1 << 16) - 1)
+#define TP_INDEX_MASK           (((1 << TP_INDEX_BITS) - 1) & ((1 << 16) - 1))
 #define TP_INDEX_SHIFT_BITS     0
 #define TP_STACK_SIZE           16
 
