@@ -9,7 +9,10 @@ PREDICTOR::PREDICTOR()
    printf("Creating trace file extract.trace\n");
 #endif
     //Initialize alpha predictor storage to 0
-    memset(&alpha, 0, sizeof(AlphaPredictorStorage));
+    memset(&alpha.localHistory, 0, sizeof(alpha.localHistory));
+    memset(&alpha.localPrediction, 2, sizeof(alpha.localPrediction));
+    memset(&alpha.globalPrediction, 1, sizeof(alpha.globalPrediction));
+    memset(&alpha.choicePrediction, 1, sizeof(alpha.choicePrediction));
     memset(&tgtpred, 0, sizeof(TargetPredictorStorage));
 }
 
