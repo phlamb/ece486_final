@@ -2,11 +2,6 @@
 
 PREDICTOR::PREDICTOR()
 {
-#if EXTRACT_TRACE
-    //get file handle for file to write trace information to
-    tracefp = fopen("extract.trace", "w"); 
-    printf("Creating trace file extract.trace\n");
-#endif
     //Initialize alpha predictor storage to 0
     memset(&alpha, 0, sizeof(AlphaPredictorStorage));
     
@@ -22,22 +17,11 @@ PREDICTOR::PREDICTOR()
 
 PREDICTOR::~PREDICTOR()
 {
-#if EXTRACT_TRACE
-    //Close trace file export handle
-    fclose(tracefp);
-    printf("Closing trace file\n");
-#endif 
 }
 
 
 bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address)
 {
-#if EXTRACT_TRACE
-    //print the current trace info to file and return
-    extract_trace(br, os);
-    return true;
-#endif
-
     bool prediction = get_branch_prediction(br, os);
     
     get_target_prediction(br, os, predicted_target_address);
@@ -51,11 +35,6 @@ bool PREDICTOR::get_prediction(const branch_record_c* br, const op_state_c* os, 
 
 void PREDICTOR::update_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
 {
-#if EXTRACT_TRACE
-    //update the extracted trace and return
-    extract_trace_update(br, os, taken, actual_target_address);
-    return;
-#endif
     //update local branch predictor
     update_branch_predictor(br, os, taken);
     //update global branch predictor
@@ -268,22 +247,3 @@ void PREDICTOR::update_target_predictor(const branch_record_c* br, const op_stat
     uint index = br->instruction_addr >> TP_INDEX_SHIFT_BITS;
     tgtpred.history[(index & TP_INDEX_MASK)] = actual_target_address;
 }
-
-
-
-//=====================================
-// Trace Extraction
-//=====================================
-#if EXTRACT_TRACE
-void PREDICTOR::extract_trace(const branch_record_c* br, const op_state_c* os)
-{
-    fprintf(tracefp, "%x %d %d %d", br->instruction_addr, (int)br->is_conditional, (int)br->is_call, (int)br->is_return);
-}
-#endif
-
-#if EXTRACT_TRACE
-void PREDICTOR::extract_trace_update(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address)
-{
-    fprintf(tracefp, " %d %x\n", (int)taken, actual_target_address);
-}
-#endif

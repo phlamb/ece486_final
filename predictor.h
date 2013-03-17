@@ -1,4 +1,5 @@
 /* Author: Mark Faust
+ * Modified By: Phil Lamb, Jesse Adams
  *
  * C version of predictor file
 */
@@ -16,13 +17,6 @@
 #define PREDICTOR_LOCAL 0
 #define PREDICTOR_GLOBAL 1
 
-
-#define EXTRACT_TRACE 0
-
-#if EXTRACT_TRACE
-    #include <stdio.h>
-    #include <stdlib.h>
-#endif
 
 struct AlphaPredictorStorage
 {
@@ -71,21 +65,11 @@ private:
     void update_choose_predictor(bool taken);
     void update_global_prediction(bool taken);
     
-#ifdef EXTRACT_TRACE
-    //Functions to create ascii trace files
-    void extract_trace(const branch_record_c* br, const op_state_c* os);
-    void extract_trace_update(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
-#endif //EXTRACT_TRACE
-
     //private variables
     AlphaPredictorStorage alpha;
     TargetPredictorStorage tgtpred;
     bool last_local_prediction;
     bool last_global_prediction;
-
-#if EXTRACT_TRACE
-    FILE *tracefp;
-#endif
 };
 
 
