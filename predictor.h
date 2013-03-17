@@ -58,12 +58,18 @@ public:
 private:
     uint8_t choose_predictor();
     bool get_branch_prediction(const branch_record_c* br, const op_state_c* os);
-    void update_branch_predictor(const branch_record_c* br, const op_state_c* os, bool taken);
-    void get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address);
-    void update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
+
+    //Alpha branch prediction update methods
+    void update_local_predictor(const branch_record_c* br, const op_state_c* os, bool taken);
     void update_global_history(bool taken);
     void update_choose_predictor(bool taken);
     void update_global_prediction(bool taken);
+
+    //Get branch target prediction
+    void get_target_prediction(const branch_record_c* br, const op_state_c* os, uint *predicted_target_address);
+    //
+    //Update branch target predictor
+    void update_target_predictor(const branch_record_c* br, const op_state_c* os, bool taken, uint actual_target_address);
     
     //private variables
     AlphaPredictorStorage alpha;
