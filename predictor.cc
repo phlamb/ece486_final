@@ -10,7 +10,12 @@ PREDICTOR::PREDICTOR()
     //Initialize alpha predictor storage to 0
     memset(&alpha, 0, sizeof(AlphaPredictorStorage));
     
-    //Initialize target predictor structure to 0
+    //Initialize counters to weakly taken
+    memset(&alpha.localHistory, 0, sizeof(alpha.localHistory));
+    memset(&alpha.localPrediction, 2, sizeof(alpha.localPrediction));
+    memset(&alpha.globalPrediction, 1, sizeof(alpha.globalPrediction));
+    memset(&alpha.choicePrediction, 1, sizeof(alpha.choicePrediction));
+    //Initialize target predictor data structure
     memset(&tgtpred, 0, sizeof(TargetPredictorStorage));
 }
 
